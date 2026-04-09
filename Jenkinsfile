@@ -36,6 +36,16 @@ pipeline {
             }
         }
 
+        stage('Check Node and NPM') {
+            steps {
+                bat 'echo PATH=%PATH%'
+                bat 'node -v'
+                bat 'npm -v'
+                bat 'where node'
+                bat 'where npm'
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 bat 'npm install'
@@ -56,11 +66,15 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                bat '''
-                docker rm -f %CONTAINER_NAME% 2>nul || exit /b 0
-                '''
+                bat 'docker rm -f %CONTAINER_NAME%'
                 bat 'docker run -d --name %CONTAINER_NAME% -p %PORT%:3000 %IMAGE_NAME%'
             }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline finished'
         }
     }
 }
