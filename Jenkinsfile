@@ -13,10 +13,12 @@ pipeline {
                     if (env.BRANCH_NAME == 'main') {
                         env.IMAGE_NAME = 'nodemain:v1.0'
                         env.PORT = '3000'
+                        env.APP_PORT = '3000'
                         env.CONTAINER_NAME = 'app_main'
                     } else if (env.BRANCH_NAME == 'dev') {
                         env.IMAGE_NAME = 'nodedev:v1.0'
                         env.PORT = '3001'
+                        env.APP_PORT = '3001'
                         env.CONTAINER_NAME = 'app_dev'
                     } else {
                         error("Unsupported branch: ${env.BRANCH_NAME}")
