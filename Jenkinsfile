@@ -30,6 +30,11 @@ pipeline {
                     } else {
                         error("Unsupported branch: ${env.BRANCH_NAME}")
                     }
+
+                    echo "BRANCH_NAME = ${env.BRANCH_NAME}"
+                    echo "IMAGE_NAME = ${env.IMAGE_NAME}"
+                    echo "PORT = ${env.PORT}"
+                    echo "CONTAINER_NAME = ${env.CONTAINER_NAME}"
                 }
             }
         }
@@ -55,14 +60,14 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t %IMAGE_NAME% .'
+                bat "docker build -t ${env.IMAGE_NAME} ."
             }
         }
 
         stage('Deploy') {
             steps {
-                bat 'docker rm -f %CONTAINER_NAME% || ver > nul'
-                bat 'docker run -d --name %CONTAINER_NAME% -p %PORT%:3000 %IMAGE_NAME%'
+                bat "docker rm -f ${env.CONTAINER_NAME} || ver > nul"
+                bat "docker run -d --name ${env.CONTAINER_NAME} -p ${env.PORT}:3000 ${env.IMAGE_NAME}"
             }
         }
     }
