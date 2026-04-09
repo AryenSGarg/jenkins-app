@@ -15,13 +15,31 @@ pipeline {
             }
         }
 
-        stage('Run App') {
+        stage('Test') {
+            steps {
+                bat 'echo Running Tests...'
+            }
+        }
+
+        stage('Build Docker Image') {
             steps {
                 script {
                     if (env.BRANCH_NAME == 'main') {
-                        bat 'echo Running MAIN branch on port 3000'
+                        bat 'docker build -t myapp:main .'
                     } else {
-                        bat 'echo Running DEV branch on port 3001'
+                        bat 'docker build -t myapp:dev .'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    if (env.BRANCH_NAME == 'main') {
+                        bat 'echo Deploying MAIN on port 3000'
+                    } else {
+                        bat 'echo Deploying DEV on port 3001'
                     }
                 }
             }
