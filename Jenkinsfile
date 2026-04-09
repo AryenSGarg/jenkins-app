@@ -1,11 +1,38 @@
 pipeline {
     agent any
 
-    stages {
+    tools {
+        nodejs 'NodeJS'
+    }
 
+    environment {
+        IMAGE_NAME = ''
+        PORT = ''
+        CONTAINER_NAME = ''
+    }
+
+    stages {
         stage('Checkout') {
             steps {
-                git branch: "${env.BRANCH_NAME}", url: 'https://github.com/AryenSGarg/jenkins-app.git'
+                checkout scm
+            }
+        }
+
+        stage('Set Environment') {
+            steps {
+                script {
+                    if (env.BRANCH_NAME == 'main') {
+                        env.IMAGE_NAME = 'nodemain:v1.0'
+                        env.PORT = '3000'
+                        env.CONTAINER_NAME = 'app_main'
+                    } else if (env.BRANCH_NAME == 'dev') {
+                        env.IMAGE_NAME = 'nodedev:v1.0'
+                        env.PORT = '3001'
+                        env.CONTAINER_NAME = 'app_dev'
+                    } else {
+                        error("Unsupported branch: ${env.BRANCH_NAME}")
+                    }
+                }
             }
         }
 
@@ -17,33 +44,23 @@ pipeline {
 
         stage('Test') {
             steps {
-                bat 'echo Running Tests...'
+                bat 'npm test'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    if (env.BRANCH_NAME == 'main') {
-                        bat 'docker build -t myapp:main .'
-                    } else {
-                        bat 'docker build -t myapp:dev .'
-                    }
-                }
+                bat 'docker build -t %IMAGE_NAME% .'
             }
         }
 
         stage('Deploy') {
             steps {
-                script {
-                    if (env.BRANCH_NAME == 'main') {
-                        bat 'echo Deploying MAIN on port 3000'
-                    } else {
-                        bat 'echo Deploying DEV on port 3001'
-                    }
-                }
+                bat '''
+                docker rm -f %CONTAINER_NAME% 2>nul || exit /b 0
+                '''
+                bat 'docker run -d --name %CONTAINER_NAME% -p %PORT%:3000 %IMAGE_NAME%'
             }
         }
-
     }
 }
