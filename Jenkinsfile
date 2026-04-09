@@ -1,11 +1,9 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'NodeJS'
-    }
-
     environment {
+        NODE_EXE = 'C:\\Program Files\\nodejs\\node.exe'
+        NPM_CMD = 'C:\\Program Files\\nodejs\\npm.cmd'
         IMAGE_NAME = ''
         PORT = ''
         CONTAINER_NAME = ''
@@ -38,23 +36,20 @@ pipeline {
 
         stage('Check Node and NPM') {
             steps {
-                bat 'echo PATH=%PATH%'
-                bat 'node -v'
-                bat 'npm -v'
-                bat 'where node'
-                bat 'where npm'
+                bat '"%NODE_EXE%" -v'
+                bat '"%NPM_CMD%" -v'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                bat 'npm install'
+                bat '"%NPM_CMD%" install'
             }
         }
 
         stage('Test') {
             steps {
-                bat 'npm test'
+                bat '"%NPM_CMD%" test'
             }
         }
 
@@ -66,7 +61,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                bat 'docker rm -f %CONTAINER_NAME%'
+                bat 'docker rm -f %CONTAINER_NAME% || ver > nul'
                 bat 'docker run -d --name %CONTAINER_NAME% -p %PORT%:3000 %IMAGE_NAME%'
             }
         }
